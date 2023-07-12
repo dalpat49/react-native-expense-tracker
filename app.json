@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "58ca4a32-80a7-4f94-b168-c50fa3d5ff6e"
+      }
+    },
+    "android": {
+      "package": "com.dalpat49.expencetracker"
+    }
+  }
+}
