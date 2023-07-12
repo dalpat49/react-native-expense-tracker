@@ -8,13 +8,19 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Pressable,
-  Modal
+  Modal,
+  Platform,
+  RefreshControl
 } from "react-native";
 // import ExpenseItem from "./screens/ExpenseItem";
 import NetInfo from "@react-native-community/netinfo";
 import ConnectToInternetModal from "./screens/ConnectToInternetModal";
 import axios from "axios";
 import Toast from "react-native-toast-message";
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { Input, Icon } from 'react-native-elements';
+
+
 
 const App = () => {
 
@@ -26,10 +32,16 @@ const App = () => {
   const [isConnected, setIsConnected] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDataAvailable, setisDataAvailable] = useState(true);
+  const [date, setDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [YourName, SetYourName] = useState('');
+  
 
   // To unsubscribe to these update, just use:
   const fetchExpenses = async () => {
     try {
+      setTimeout(async() => {
       await axios
         .get("https://expense-tracker-room.onrender.com/expense")
         .then((res) => {
@@ -40,14 +52,17 @@ const App = () => {
             }
             setExpenses(data);
             setisDataAvailable(false);
+            setRefreshing(false);
           }
         })
         .catch((err) => {
           console.log(err);
         });
+      }, 2000);
     } catch (err) {
       alert(err);
     }
+    
   };
 
   useEffect(() => {
@@ -61,10 +76,11 @@ const App = () => {
     fetchExpenses();
   }, []);
 
+
   const handleAddExpense = async () => {
     // Perform validation and add the expense
     // Example:
-    if (!description || !amount) {
+    if (!description || !amount || !date || !YourName)  {
       Toast.show({
         type: "error",
         text1: "Please fill all details",
@@ -74,12 +90,17 @@ const App = () => {
 
     let description1 = description;
     let amount1 = amount;
+    let userName = YourName;
+    let savedate = date.toISOString().split('T')[0];
+
     setisDataAvailable(true);
     try {
       await axios
         .post("https://expense-tracker-room.onrender.com/getExpenses", {
           description1,
           amount1,
+          savedate,
+          userName
         })
         .then((response) => {
           // Clear input fields
@@ -117,6 +138,7 @@ const App = () => {
     setIsDeleting(false)
   } 
 
+  //delete 
   const deleteItem = async(item) =>{
     setisDataAvailable(true);
     let dlturl = "https://expense-tracker-room.onrender.com/deleteExpense/" + item;
@@ -139,6 +161,29 @@ const App = () => {
     });
   }
 
+  //show date picker
+  const showDatePickerModal = () => {
+    setShowDatePicker(true);
+  };
+
+  //hide date picker
+  const hideDatePickerModal = () => {
+    setShowDatePicker(false);
+  };
+
+  //calendra add date
+  const handleDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || date;
+    setDate(currentDate);
+    hideDatePickerModal();
+  };
+  //handling the refresh
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchExpenses();
+  };
+
+
   return (
     <View style={styles.container}>
       <ConnectToInternetModal visible={!isConnected} />
@@ -152,6 +197,8 @@ const App = () => {
             <Pressable onPress={()=>onPressFunction(item._id)}>
               <View style={styles.containerData} >
                 <View style={styles.descriptionContainer}>
+                  <Text style={styles.descriptionText}>[{item.username}]</Text>
+                  <Text style={styles.descriptionText}>[{item.savedDate}] </Text>
                   <Text style={styles.descriptionText}>{item.description}</Text>
                 </View>
                 <Text style={styles.amountText}>₹{item.amount}</Text>
@@ -178,27 +225,64 @@ const App = () => {
         </>
       
     }
+    refreshControl={
+      <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+    }
       />
       <ActivityIndicator
         animating={isDataAvailable}
         size="large"
         color="#00ff00"
       />
+      {showDatePicker && (
+        <DateTimePicker
+          value={date}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          onChange={handleDateChange}
+        />
+      )}
 
       <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Description"
-          value={description}
-          onChangeText={setDescription}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Amount"
-          value={amount}
-          onChangeText={setAmount}
-          keyboardType="numeric"
-        />
+        <Input
+          placeholder="Select Date"
+          value={date.toISOString().split('T')[0]}
+          onPress={showDatePickerModal}
+          editable={false}
+          rightIcon={
+            <Icon
+              type="font-awesome"
+              name="calendar"
+              size={25}
+              color="gray"
+              onPress={showDatePickerModal}
+            />
+          }
+        />  
+         <TextInput
+            style={styles.input}
+            placeholder="Description"
+            value={description}
+            onChangeText={setDescription}
+          />
+
+        <View  style={{flexDirection:"row" ,width:100}}>
+
+          <TextInput
+            style={styles.inputRow}
+            placeholder="Amount"
+            value={amount}
+            onChangeText={setAmount}
+            keyboardType="numeric"
+          />
+
+          <TextInput
+            style={styles.inputRow}
+            placeholder="Your Name"
+            value={YourName}
+            onChangeText={SetYourName}
+          />
+        </View>
         <TouchableOpacity style={styles.addButtonAdd} onPress={handleAddExpense}>
           <Text style={styles.buttonText}>Add Expense</Text>
         </TouchableOpacity>
@@ -234,6 +318,15 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
+  },
+  inputRow: {
+    backgroundColor: "#F5F5F5",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 16,
+    width:160,
+    marginHorizontal:5
   },
   input: {
     backgroundColor: "#F5F5F5",
@@ -273,6 +366,7 @@ const styles = StyleSheet.create({
   descriptionContainer: {
     flex: 1,
     marginRight: 16,
+    flexDirection:'row'
   },
   descriptionText: {
     fontSize: 16,
