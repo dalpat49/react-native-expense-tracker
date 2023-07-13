@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect , useRef} from "react";
 import {
   View,
   Text,
@@ -20,7 +20,19 @@ import Toast from "react-native-toast-message";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Input, Icon } from 'react-native-elements';
 import * as Device from 'expo-device';
+import * as Notifications from 'expo-notifications';
+import * as TaskManager from 'expo-task-manager';
 
+// Define the task name for background notifications
+
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
 
 
 const App = () => {
@@ -40,12 +52,54 @@ const App = () => {
   const [YourName, SetYourName] = useState("");
   const [myDevice, setMyDevice] = useState("dalpat's Galaxy J6+");
   const [totalAmount, settotalAmount] = useState('0');
+  const [expoPushToken, setExpoPushToken] = useState('');
+  const [tokenNew, settokenNew] = useState('');
+  const [NewToken, setNewToken] = useState('');
+  const [dlptToken, setdlptToken] = useState('');
+  const [ajuToken, setauToken] = useState('');
+  const [shktiToken, setshktiToken] = useState('');
+  const [gotmTokan, setgotmTokan] = useState('');
+  const [notification, setNotification] = useState(false);
+  const notificationListener = useRef();
+  const responseListener = useRef();
+
+     
+    
+
+  useEffect(() => {
+    registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
+    registerForPushNotificationsAsync().then(token => settokenNew(token));
+
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+      setNotification(notification);
+    });
+
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log(response);
+    });
+
+    return () => {
+      Notifications.removeNotificationSubscription(notificationListener.current);
+      Notifications.removeNotificationSubscription(responseListener.current);
+    };
+
+    // App startup
+    async function appStartup() {
+      // Register for push notifications
+      const token = await registerForPushNotificationsAsync();
+      console.log('Push notification token:', token);
+    }
+
+  }, []);
+
+
+
   
 
   // To unsubscribe to these update, just use:
   const fetchExpenses = async () => {
     try {
-      setTimeout(async() => {
+     
       await axios
         .get("https://expense-tracker-room.onrender.com/expense")
         .then((res) => {
@@ -61,7 +115,61 @@ const App = () => {
         .catch((err) => {
           console.log(err);
         });
-      }, 2000);
+  
+    } catch (err) {
+      alert(err);
+    }
+    
+  };
+
+
+  const saveToken = async () => {
+    try {
+    
+      await axios
+        .post("https://expense-tracker-room.onrender.com/saveToken",{tokenNew})
+        .then((res) => {
+          
+         
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+      
+    } catch (err) {
+      alert(err);
+    }
+    
+  };
+  
+
+
+  const getToken = async () => {
+    try {
+    
+      await axios
+        .get("https://expense-tracker-room.onrender.com/getToken")
+        .then((res) => {
+          let getAllTokens = res.data;
+         
+ 
+          function removeDuplicates(arr) {
+              return arr.filter((item,
+                  index) => arr.indexOf(item) === index);
+          }
+        
+        let getalldata = removeDuplicates(getAllTokens);
+        // console.log(getalldata)
+          // setdlptToken(getalldata[0])
+          // setauToken(getalldata[1])
+          // setshktiToken(getalldata[2])
+          // setgotmTokan(getalldata[4])
+         
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+      
     } catch (err) {
       alert(err);
     }
@@ -70,6 +178,8 @@ const App = () => {
   
 
   useEffect(() => {
+    saveToken();
+
     const unsubscribe = NetInfo.addEventListener((state) => {
       const isConnected = state.isConnected;
       setIsConnected(isConnected);
@@ -78,7 +188,38 @@ const App = () => {
     unsubscribe();
     //fetch al data
     fetchExpenses();
+    getToken();
+    // registerForPushNotificationsAsync()
   }, []);
+
+
+  async function sendPushNotification(pushTokens,message) {
+    // Retrieve the push tokens of all devices/users from your database
+    // const pushTokens = []; // Replace with your own logic to get the tokens
+  
+    // Prepare the notification payload
+    const notification = {
+      to: pushTokens,
+      sound: 'default',
+      title: 'New Expense Added',
+      body: message,
+      data: { data: 'additional data' },
+    };
+  
+    // Send the notification using Expo's push notification service
+    const response = await fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(notification),
+    });
+  
+    // Handle the response
+    const result = await response.json();
+    // console.log(result);
+  }
 
 
   const handleAddExpense = async () => {
@@ -107,6 +248,10 @@ const App = () => {
           userName
         })
         .then((response) => {
+          sendPushNotification('ExponentPushToken[pJHPI5NTDlAJRUQLb6OqgU]',`${YourName} added ${description} to room expense`)
+          // sendPushNotification('ExponentPushToken[pJHPI5NTDlAJRUQLb6OqgU]','getData from dalpat singh')
+          // sendPushNotification('ExponentPushToken[pJHPI5NTDlAJRUQLb6OqgU]','getData from dalpat singh')
+          // sendPushNotification('ExponentPushToken[pJHPI5NTDlAJRUQLb6OqgU]','getData from dalpat singh')
           // Clear input fields
           let { status, msg } = response.data;
 
@@ -204,6 +349,42 @@ const App = () => {
   const closeModalAddExpense =() => {
     setIsUpdating(false);
   }
+
+  async function registerForPushNotificationsAsync() {
+    let token;
+  
+    if (Platform.OS === 'android') {
+      await Notifications.setNotificationChannelAsync('default', {
+        name: 'default',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF231F7C',
+      });
+    }
+  
+    if (Device.isDevice) {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      if (finalStatus !== 'granted') {
+        alert('Failed to get push token for push notification!');
+        return;
+      }
+      token = (await Notifications.getExpoPushTokenAsync()).data;
+      console.log(token);
+      setNewToken(token)
+    } else {
+      alert('Must use physical device for Push Notifications');
+    }
+  
+  
+    return token;
+  }
+  
+  
 
   return (
     <View style={styles.container}>
@@ -526,3 +707,52 @@ const styles = StyleSheet.create({
 });
 
 export default App;
+
+
+
+// async function schedulePushNotification() {
+//   await Notifications.scheduleNotificationAsync({
+//     content: {
+//       title: "You've got mail! 📬",
+//       body: 'Here is the notification body',
+//       data: { data: 'goes here' },
+//     },
+//     trigger: { seconds: 2 },
+//   });
+// }
+
+// async function registerForPushNotificationsAsync() {
+//   let token;
+
+//   if (Platform.OS === 'android') {
+//     await Notifications.setNotificationChannelAsync('default', {
+//       name: 'default',
+//       importance: Notifications.AndroidImportance.MAX,
+//       vibrationPattern: [0, 250, 250, 250],
+//       lightColor: '#FF231F7C',
+//     });
+//   }
+
+//   if (Device.isDevice) {
+//     const { status: existingStatus } = await Notifications.getPermissionsAsync();
+//     let finalStatus = existingStatus;
+//     if (existingStatus !== 'granted') {
+//       const { status } = await Notifications.requestPermissionsAsync();
+//       finalStatus = status;
+//     }
+//     if (finalStatus !== 'granted') {
+//       alert('Failed to get push token for push notification!');
+//       return;
+//     }
+//     token = (await Notifications.getExpoPushTokenAsync()).data;
+//     console.log(token);
+//     setNewToken(token)
+//   } else {
+//     alert('Must use physical device for Push Notifications');
+//   }
+
+
+//   return token;
+// }
+
+

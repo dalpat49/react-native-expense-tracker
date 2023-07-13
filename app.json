@@ -1,12 +1,36 @@
 {
   "expo": {
-    "extra": {
-      "eas": {
-        "projectId": "58ca4a32-80a7-4f94-b168-c50fa3d5ff6e"
-      }
+    "name": "Expense-tracker",
+    "slug": "Expense-tracker",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
     },
     "android": {
-      "package": "com.dalpat49.expencetracker"
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.dalpat49.Expensetracker"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "dd448d8d-1530-417e-addc-6cbb54cd6464"
+      }
     }
   }
 }
