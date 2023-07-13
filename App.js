@@ -19,6 +19,7 @@ import axios from "axios";
 import Toast from "react-native-toast-message";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Input, Icon } from 'react-native-elements';
+import * as Device from 'expo-device';
 
 
 
@@ -35,7 +36,10 @@ const App = () => {
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [YourName, SetYourName] = useState('');
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [YourName, SetYourName] = useState("");
+  const [myDevice, setMyDevice] = useState("dalpat's Galaxy J6+");
+  const [totalAmount, settotalAmount] = useState('0');
   
 
   // To unsubscribe to these update, just use:
@@ -45,12 +49,11 @@ const App = () => {
       await axios
         .get("https://expense-tracker-room.onrender.com/expense")
         .then((res) => {
-          const { status, data } = res.data;
+          const { status, data ,sum} = res.data;
           if (status === "success") {
-            if(data.length == 0){
-              alert("no data available")
-            }
+            console.log(sum)
             setExpenses(data);
+            settotalAmount(sum)
             setisDataAvailable(false);
             setRefreshing(false);
           }
@@ -64,6 +67,7 @@ const App = () => {
     }
     
   };
+  
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((state) => {
@@ -112,10 +116,12 @@ const App = () => {
               text1: msg,
             });
             setisDataAvailable(false);
+            setIsUpdating(false);
           }
 
           setDescription("");
           setAmount("");
+          SetYourName("");
           fetchExpenses();
         })
         .catch((error) => {
@@ -141,24 +147,32 @@ const App = () => {
   //delete 
   const deleteItem = async(item) =>{
     setisDataAvailable(true);
-    let dlturl = "https://expense-tracker-room.onrender.com/deleteExpense/" + item;
-    await axios
-    .get(dlturl)
-    .then((response) => {
-      let { status, msg } = response.data;
-      setIsDeleting(false);
-      if (status == "success") {
-        fetchExpenses();
-        Toast.show({
-          type: "success",
-          text1: msg,
-        });
-        setisDataAvailable(false);
-      }
-    })
-    .catch((error) => {
-      console.log(error);
-    });
+    
+    if(Device.deviceName != myDevice){
+      alert('sorry Only dalpat can delete the Data');
+      setisDataAvailable(false);
+      return;
+    }
+    else{
+      let dlturl = "https://expense-tracker-room.onrender.com/deleteExpense/" + item;
+      await axios
+      .get(dlturl)
+      .then((response) => {
+        let { status, msg } = response.data;
+        setIsDeleting(false);
+        if (status == "success") {
+          fetchExpenses();
+          Toast.show({
+            type: "success",
+            text1: msg,
+          });
+          setisDataAvailable(false);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
   }
 
   //show date picker
@@ -182,7 +196,14 @@ const App = () => {
     setRefreshing(true);
     fetchExpenses();
   };
+  
+  const openExpenseModal =() => {
+    setIsUpdating(true)
+  }
 
+  const closeModalAddExpense =() => {
+    setIsUpdating(false);
+  }
 
   return (
     <View style={styles.container}>
@@ -228,6 +249,7 @@ const App = () => {
     refreshControl={
       <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
     }
+    ListEmptyComponent={<Text style={{textAlign:"center"}}>No Data available</Text>}
       />
       <ActivityIndicator
         animating={isDataAvailable}
@@ -243,47 +265,65 @@ const App = () => {
         />
       )}
 
-      <View style={styles.inputContainer}>
-        <Input
-          placeholder="Select Date"
-          value={date.toISOString().split('T')[0]}
-          onPress={showDatePickerModal}
-          editable={false}
-          rightIcon={
-            <Icon
-              type="font-awesome"
-              name="calendar"
-              size={25}
-              color="gray"
-              onPress={showDatePickerModal}
-            />
-          }
-        />  
-         <TextInput
-            style={styles.input}
-            placeholder="Description"
-            value={description}
-            onChangeText={setDescription}
-          />
+      {isUpdating && (
+        <Modal visible={isUpdating} transparent={true} animationType="slide ">
+        <View style={styles.modalContainerForInput}>
+            <View style={styles.contentContainerForInput}>
+                <Input
+                  placeholder="Select Date"
+                  value={date.toISOString().split('T')[0]}
+                  onPress={showDatePickerModal}
+                  editable={false}
+                  rightIcon={
+                    <Icon
+                      type="font-awesome"
+                      name="calendar"
+                      size={25}
+                      color="gray"
+                      onPress={showDatePickerModal}
+                    />
+                  }
+                />  
+                <TextInput
+                    style={styles.input}
+                    placeholder="Description"
+                    value={description}
+                    onChangeText={setDescription}
+                  />
 
-        <View  style={{flexDirection:"row" ,width:100}}>
+                <View  style={{flexDirection:"row" ,width:100}}>
 
-          <TextInput
-            style={styles.inputRow}
-            placeholder="Amount"
-            value={amount}
-            onChangeText={setAmount}
-            keyboardType="numeric"
-          />
+                  <TextInput
+                    style={styles.inputRow}
+                    placeholder="Amount"
+                    value={amount}
+                    onChangeText={setAmount}
+                    keyboardType="numeric"
+                  />
 
-          <TextInput
-            style={styles.inputRow}
-            placeholder="Your Name"
-            value={YourName}
-            onChangeText={SetYourName}
-          />
-        </View>
-        <TouchableOpacity style={styles.addButtonAdd} onPress={handleAddExpense}>
+                  <TextInput
+                    style={styles.inputRow}
+                    placeholder="Your Name"
+                    value={YourName}
+                    onChangeText={SetYourName}
+                  />
+                </View>
+                <View style={styles.buttonArea}>
+                     <TouchableOpacity style={styles.addButtonForInput} onPress={closeModalAddExpense}>
+                        <Text style={styles.buttonText}>Close</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity style={styles.addButtonForInputAdd}  onPress={handleAddExpense}>
+                        <Text style={styles.buttonText}>Add</Text>
+                      </TouchableOpacity>
+                </View>
+             </View>
+           </View>
+         </Modal>
+      )}
+
+      <View style={styles.inputContainerTotal}>
+        <Text style={{fontSize:20,marginTop:10,fontWeight:'bold'}}>Total = {totalAmount}</Text>
+        <TouchableOpacity style={styles.addButtonAddExpense} onPress={openExpenseModal}>
           <Text style={styles.buttonText}>Add Expense</Text>
         </TouchableOpacity>
       </View>
@@ -308,6 +348,26 @@ const styles = StyleSheet.create({
   inputContainer: {
     backgroundColor: "#FFFFFF",
     borderRadius: 8,
+    padding: 16,
+    marginTop: 20,
+    textAlign: "center",
+    justifyContent: "center",
+    alignContent: "center",
+    flex: 1,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  inputContainerTotal: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 8,
+    flexDirection: "row",
+    justifyContent:'space-between',
     padding: 16,
     marginTop: 20,
     shadowColor: "#000",
@@ -339,6 +399,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#3366FF",
     borderRadius: 8,
     paddingVertical: 12,
+  },
+  addButtonAddExpense: {
+    backgroundColor: "#3366FF",
+    borderRadius: 8,
+    paddingVertical: 12,
+    width:200
   },
   buttonText: {
     color: "#FFFFFF",
@@ -389,6 +455,19 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'center',
   },
+  modalContainerForInput: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    padding:10
+    // alignItems: 'center',
+  },
+  contentContainerForInput: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    padding: 20,
+    // alignItems: 'center',
+  },
   title: {
     fontSize: 18,
     fontWeight: 'bold',
@@ -425,7 +504,25 @@ const styles = StyleSheet.create({
   buttonArea:{
     flexDirection: 'row',
     
-  }
+  },
+  addButtonForInput: {
+    backgroundColor: "#3366FF",
+    width:170,
+    marginVertical:6,
+    borderRadius: 8,
+    paddingVertical: 12,
+    marginHorizontal: 4
+    
+  },
+  addButtonForInputAdd: {
+    backgroundColor: "red",
+    width:170,
+    marginVertical:6,
+    borderRadius: 8,
+    paddingVertical: 12,
+    marginHorizontal: 4
+    
+  },
 });
 
 export default App;
