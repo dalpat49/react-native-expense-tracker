@@ -26,7 +26,10 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Login from "./screens/Login";
 import RoomExpense from "./screens/RoomExpense";
+import NewBottom from "./screens/NewBottom";
 import BottomNavigation from "./screens/BottomNavigation";
+import SignUp from "./screens/SignUp";
+import WelcomeScreen from "./screens/WelcomeScreen";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Stack = createNativeStackNavigator();
@@ -56,16 +59,20 @@ const App = () => {
   return (
     <>
      <NavigationContainer>
-      <Stack.Navigator>
+      <Stack.Navigator initialRouteName="WelcomeScreen">
       {isLoggedIn ? 
-      (
-          <Stack.Screen name="BottomNavigation" component={BottomNavigation} options={{headerShown:false}} />
+        (
+          <Stack.Screen name="NewBottom" component={NewBottom} options={{headerShown:false}} />
         )
         :
         (
-          <Stack.Screen name="Login" component={Login} options={{headerShown:false}} />
+          <Stack.Screen name="WelcomeScreen" component={WelcomeScreen} options={{headerShown:false}} />
         )
       }
+
+      <Stack.Screen name="SignUp" component={SignUp} options={{headerShown:false , animationTypeForReplace: 'push', animation:'slide_from_right'}} />
+      <Stack.Screen name="Login" component={Login} options={{headerShown:false , animationTypeForReplace: 'push', animation:'slide_from_right'}} />
+
       </Stack.Navigator>
     </NavigationContainer>
     {/* <Login /> */}
