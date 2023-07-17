@@ -22,6 +22,7 @@ import axios from "axios";
 import { Input, Icon } from 'react-native-elements';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Toast from "react-native-toast-message";
+import Appbar from "./Appbar"
 
 
 
@@ -79,7 +80,7 @@ const Personal = ({
   const handleAddExpense = async () => {
     // Perform validation and add the expense
     // Example:
-    if (!description || !amount || !date || !YourName)  {
+    if (!description || !amount || !date )  {
       Toast.show({
         type: "error",
         text1: "Please fill all details",
@@ -174,9 +175,9 @@ const Personal = ({
 
   return (
     <>
+      <Appbar title={"Your Expenses"} />
       <Toast />
       <View style={styles.container}>
-         <Text style={styles.titleMain}>Your Personal Expenses</Text>
             <SafeAreaView style={styles.container}>
             <FlatList
                 onScroll={onScroll}

@@ -1,201 +1,80 @@
-import React, { useState, useRef , useEffect} from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, Image, Animated, Keyboard } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { View, Text, TouchableOpacity, Image, TextInput ,SafeAreaView } from 'react-native'
+import React from 'react'
+// import { SafeAreaView } from 'react-native-safe-area-context'
+import { themeColors } from '../theme'
+import { useNavigation } from '@react-navigation/native'
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const Login = ({ navigation }) => {
-  const logoOpacity = useRef(new Animated.Value(0)).current;
-  const logoScale = useRef(new Animated.Value(0.5)).current;
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoggedIn, setLoggedIn] = useState(false);
 
-  const handleLogin = async () => {
-    // Perform authentication logic here
-    // Replace the code below with your own authentication logic
-
-    // Simulating a successful login
-    try {
-      await AsyncStorage.setItem('isLoggedIn', 'true');
-      setLoggedIn(true);
-    } catch (error) {
-      console.log('Error saving login status:', error);
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      await AsyncStorage.removeItem('isLoggedIn');
-      setLoggedIn(false);
-    } catch (error) {
-      console.log('Error removing login status:', error);
-    }
-  };
-
-  const handleRegister = () => {
-    navigation.navigate('Register');
-  };
-
-  const handleForgotPassword = () => {
-    // Implement your forgot password logic here
-    alert('Forgot password clicked');
-  };
-
-  const handleKeyboardShow = () => {
-    Animated.parallel([
-      Animated.timing(logoOpacity, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(logoScale, {
-        toValue: 0.2,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  };
-
-  const handleKeyboardHide = () => {
-    Animated.parallel([
-      Animated.timing(logoOpacity, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(logoScale, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  };
-
-  React.useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', handleKeyboardShow);
-    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', handleKeyboardHide);
-
-    return () => {
-      keyboardDidShowListener.remove();
-      keyboardDidHideListener.remove();
-    };
-  }, []);
-
+export default function LoginScreen() {
+  const navigation = useNavigation();
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
-      <View style={styles.backgroundContainer}>
-        <Image source={require('../assets/background.jpg')} style={styles.backgroundImage} />
-      </View>
-      <View style={styles.logoContainer}>
-        <Animated.Image source={require('../assets/icon.png')} style={[styles.logo, { opacity: logoOpacity, transform: [{ scale: logoScale }] }]} />
-      </View>
-      <View style={styles.formContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          placeholderTextColor="#aaa"
-          value={email}
-          onChangeText={(text) => setEmail(text)}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          autoCorrect={false}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          placeholderTextColor="#aaa"
-          value={password}
-          onChangeText={(text) => setPassword(text)}
-          secureTextEntry
-        />
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Login</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.linkButton} onPress={handleForgotPassword}>
-          <Text style={styles.linkButtonText}>Forgot Password?</Text>
-        </TouchableOpacity>
-        <View style={styles.registerContainer}>
-          <Text style={styles.registerText}>Don't have an account?</Text>
-          <TouchableOpacity onPress={handleRegister}>
-            <Text style={styles.registerLink}>Register</Text>
+    <View className="flex-1 bg-white " style={{backgroundColor: themeColors.bg}}>
+      <SafeAreaView  className="flex ">
+        <View className="flex-row justify-start">
+          <TouchableOpacity onPress={()=> navigation.goBack()} 
+            className="bg-yellow-400 p-2 mt-6 rounded-tr-2xl rounded-bl-2xl ml-4">
+            <MaterialCommunityIcons name="arrow-left" color={"black"} size={26} />
           </TouchableOpacity>
         </View>
+        <View  className="flex-row justify-center mb-4">
+          <Image source={require('../assets/images/login.png')} 
+          style={{width: 200, height: 200}} />
+        </View>       
+      </SafeAreaView>
+      <View 
+        style={{borderTopLeftRadius: 50, borderTopRightRadius: 50}} 
+        className="flex-1 bg-white px-8 pt-8">
+          <View className="form space-y-2">
+            <Text className="text-gray-700 ml-4">Email Address</Text>
+            <TextInput 
+              className="p-4 bg-gray-100 text-gray-700 rounded-2xl mb-3"
+              placeholder="email"
+              value="john@gmail.com" 
+            />
+            <Text className="text-gray-700 ml-4">Password</Text>
+            <TextInput 
+              className="p-4 bg-gray-100 text-gray-700 rounded-2xl"
+              secureTextEntry
+              placeholder="password"
+              value="test12345" 
+            />
+            <TouchableOpacity className="flex items-end">
+              <Text className="text-gray-700 mb-5">Forgot Password?</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              className="py-3 bg-yellow-400 rounded-xl">
+                <Text 
+                    className="text-xl font-bold text-center text-gray-700"
+                >
+                        Login
+                </Text>
+             </TouchableOpacity>
+            
+          </View>
+          <Text className="text-xl text-gray-700 font-bold text-center py-5">Or</Text>
+          <View className="flex-row justify-center space-x-12">
+            <TouchableOpacity className="p-2 bg-gray-100 rounded-2xl">
+              <Image source={require('../assets/icons/google.png')} className="w-10 h-10" />
+            </TouchableOpacity>
+            <TouchableOpacity className="p-2 bg-gray-100 rounded-2xl">
+              <Image source={require('../assets/icons/apple.png')} className="w-10 h-10" />
+            </TouchableOpacity>
+            <TouchableOpacity className="p-2 bg-gray-100 rounded-2xl">
+              <Image source={require('../assets/icons/facebook.png')} className="w-10 h-10" />
+            </TouchableOpacity>
+          </View>
+          <View className="flex-row justify-center mt-7">
+              <Text className="text-gray-500 font-semibold">
+                  Don't have an account?
+              </Text>
+              <TouchableOpacity onPress={()=> navigation.navigate('SignUp')}>
+                  <Text className="font-semibold text-yellow-500"> Sign Up</Text>
+              </TouchableOpacity>
+          </View>
+          
       </View>
-    </KeyboardAvoidingView>
-  );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  backgroundContainer: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  backgroundImage: {
-    flex: 1,
-    resizeMode: 'cover',
-  },
-  logoContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 50,
-  },
-  logo: {
-    width: 150,
-    height: 150,
-  },
-  formContainer: {
-    flex: 1,
-    paddingHorizontal: 30,
-    paddingTop: 30,
-  },
-  input: {
-    height: 48,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    marginBottom: 16,
-    color: '#fff',
-  },
-  button: {
-    backgroundColor: '#0066cc',
-    height: 48,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  linkButton: {
-    alignSelf: 'flex-end',
-  },
-  linkButtonText: {
-    color: '#0066cc',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  registerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 16,
-  },
-  registerText: {
-    fontSize: 14,
-    color: '#fff',
-    marginRight: 4,
-  },
-  registerLink: {
-    fontSize: 14,
-    color: '#0066cc',
-    fontWeight: 'bold',
-  },
-});
-
-export default Login;
+    </View>
+    
+  )
+}

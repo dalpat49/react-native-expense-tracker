@@ -22,6 +22,7 @@ import { Input, Icon } from 'react-native-elements';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import * as TaskManager from 'expo-task-manager';
+import Appbar from "./Appbar";
 
 // Define the task name for background notifications
 
@@ -48,6 +49,7 @@ const RoomExpense = () => {
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [AddBtnDisabled, setAddBtnDisabled] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [YourName, SetYourName] = useState("");
   const [myDevice, setMyDevice] = useState("dalpat's Galaxy J6+");
@@ -220,6 +222,7 @@ const RoomExpense = () => {
 
 
   const handleAddExpense = async () => {
+    setAddBtnDisabled(true)
     // Perform validation and add the expense
     // Example:
     if (!description || !amount || !date || !YourName)  {
@@ -265,6 +268,7 @@ const RoomExpense = () => {
           setAmount("");
           SetYourName("");
           fetchExpenses();
+          setAddBtnDisabled(false)
         })
         .catch((error) => {
           console.log(error);
@@ -380,135 +384,134 @@ const RoomExpense = () => {
   
     return token;
   }
-  
-  
-
   return (
-    <View style={styles.container}>
-      <ConnectToInternetModal visible={!isConnected} />
+    <>
+      <Appbar title={"Home"} />
+      <View style={styles.container}>
 
-      <Text style={styles.titleMain}>Expense Tracker App</Text>
-      <FlatList
-        data={expenses}
-        showsHorizontalScrollIndicator={false}
-        showsVerticalScrollIndicator={false}
-        keyExtractor={(item) => item._id}
-        renderItem={({ item }) => 
-        <>
-            <Pressable onPress={()=>onPressFunction(item._id)}>
-              <View style={styles.containerData} >
-                <View style={styles.descriptionContainer}>
-                  <Text style={styles.descriptionText}>[{item.username}]</Text>
-                  <Text style={styles.descriptionText}>[{item.savedDate}] </Text>
-                  <Text style={styles.descriptionText}>{item.description}</Text>
+        <ConnectToInternetModal visible={!isConnected} />
+        <FlatList
+          data={expenses}
+          showsHorizontalScrollIndicator={false}
+          showsVerticalScrollIndicator={false}
+          keyExtractor={(item) => item._id}
+          renderItem={({ item }) => 
+          <>
+              <Pressable onPress={()=>onPressFunction(item._id)}>
+                <View style={styles.containerData} >
+                  <View style={styles.descriptionContainer}>
+                    <Text style={styles.descriptionText}>[{item.username}]</Text>
+                    <Text style={styles.descriptionText}>[{item.savedDate}] </Text>
+                    <Text style={styles.descriptionText}>{item.description}</Text>
+                  </View>
+                  <Text style={styles.amountText}>₹{item.amount}</Text>
                 </View>
-                <Text style={styles.amountText}>₹{item.amount}</Text>
+            </Pressable>
+        {isDeleting ?(
+            <Modal visible={isDeleting} transparent={true} animationType="fade">
+            <View style={styles.modalContainer}>
+              <View style={styles.contentContainer}>
+                <Text style={styles.title}>Delete Item</Text>
+                <Text style={styles.subtitle}>Are you sure.</Text>
+                  <View style={styles.buttonArea}>
+                    <TouchableOpacity style={styles.addButton} onPress={closeModal}>
+                      <Text style={styles.buttonText}>Close</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.addButtonDlt} onPress={()=>{deleteItem(YourId)}}>
+                      <Text style={styles.buttonText}>Delete</Text>
+                    </TouchableOpacity>
+                  </View>
               </View>
-          </Pressable>
-      {isDeleting ?(
-          <Modal visible={isDeleting} transparent={true} animationType="fade">
-          <View style={styles.modalContainer}>
-            <View style={styles.contentContainer}>
-              <Text style={styles.title}>Delete Item</Text>
-              <Text style={styles.subtitle}>Are you sure.</Text>
-                <View style={styles.buttonArea}>
-                  <TouchableOpacity style={styles.addButton} onPress={closeModal}>
-                    <Text style={styles.buttonText}>Close</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.addButtonDlt} onPress={()=>{deleteItem(YourId)}}>
-                    <Text style={styles.buttonText}>Delete</Text>
-                  </TouchableOpacity>
-                </View>
             </View>
-          </View>
-          </Modal>
-      ):null}
-        </>
-      
-    }
-    refreshControl={
-      <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-    }
-    ListEmptyComponent={<Text style={{textAlign:"center"}}>No Data available</Text>}
-      />
-      <ActivityIndicator
-        animating={isDataAvailable}
-        size="large"
-        color="#00ff00"
-      />
-      {showDatePicker && (
-        <DateTimePicker
-          value={date}
-          mode="date"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          onChange={handleDateChange}
+            </Modal>
+        ):null}
+          </>
+        
+      }
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+      }
+      ListEmptyComponent={<Text style={{textAlign:"center"}}>Loading....</Text>}
         />
-      )}
+        <ActivityIndicator
+          animating={isDataAvailable}
+          size="large"
+          color="#00ff00"
+        />
+        {showDatePicker && (
+          <DateTimePicker
+            value={date}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={handleDateChange}
+          />
+        )}
 
-      {isUpdating && (
-        <Modal visible={isUpdating} transparent={true} animationType="slide ">
-        <View style={styles.modalContainerForInput}>
-            <View style={styles.contentContainerForInput}>
-                <Input
-                  placeholder="Select Date"
-                  value={date.toISOString().split('T')[0]}
-                  onPress={showDatePickerModal}
-                  editable={false}
-                  rightIcon={
-                    <Icon
-                      type="font-awesome"
-                      name="calendar"
-                      size={25}
-                      color="gray"
-                      onPress={showDatePickerModal}
+        {isUpdating && (
+          <Modal visible={isUpdating} transparent={true} animationType="slide ">
+          <View style={styles.modalContainerForInput}>
+              <View style={styles.contentContainerForInput}>
+                  <Input
+                    placeholder="Select Date"
+                    value={date.toISOString().split('T')[0]}
+                    onPress={showDatePickerModal}
+                    editable={false}
+                    rightIcon={
+                      <Icon
+                        type="font-awesome"
+                        name="calendar"
+                        size={25}
+                        color="gray"
+                        onPress={showDatePickerModal}
+                      />
+                    }
+                  />  
+                  <TextInput
+                      style={styles.input}
+                      placeholder="Description"
+                      value={description}
+                      onChangeText={setDescription}
                     />
-                  }
-                />  
-                <TextInput
-                    style={styles.input}
-                    placeholder="Description"
-                    value={description}
-                    onChangeText={setDescription}
-                  />
 
-                <View  style={{flexDirection:"row" ,width:100}}>
+                  <View  style={{flexDirection:"row" ,width:100}}>
 
-                  <TextInput
-                    style={styles.inputRow}
-                    placeholder="Amount"
-                    value={amount}
-                    onChangeText={setAmount}
-                    keyboardType="numeric"
-                  />
+                    <TextInput
+                      style={styles.inputRow}
+                      placeholder="Amount"
+                      value={amount}
+                      onChangeText={setAmount}
+                      keyboardType="numeric"
+                    />
 
-                  <TextInput
-                    style={styles.inputRow}
-                    placeholder="Your Name"
-                    value={YourName}
-                    onChangeText={SetYourName}
-                  />
-                </View>
-                <View style={styles.buttonArea}>
-                     <TouchableOpacity style={styles.addButtonForInput} onPress={closeModalAddExpense}>
-                        <Text style={styles.buttonText}>Close</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity style={styles.addButtonForInputAdd}  onPress={handleAddExpense}>
-                        <Text style={styles.buttonText}>Add</Text>
-                      </TouchableOpacity>
-                </View>
-             </View>
-           </View>
-         </Modal>
-      )}
+                    <TextInput
+                      style={styles.inputRow}
+                      placeholder="Your Name"
+                      value={YourName}
+                      onChangeText={SetYourName}
+                    />
+                  </View>
+                  <View style={styles.buttonArea}>
+                      <TouchableOpacity style={styles.addButtonForInput} onPress={closeModalAddExpense}>
+                          <Text style={styles.buttonText}>Close</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.addButtonForInputAdd}  onPress={handleAddExpense}>
+                          <Text style={styles.buttonText} disabled={AddBtnDisabled}>Add</Text>
+                        </TouchableOpacity>
+                  </View>
+              </View>
+            </View>
+          </Modal>
+        )}
 
-      <View style={styles.inputContainerTotal}>
-        <Text style={{fontSize:20,marginTop:10,fontWeight:'bold'}}>Total = {totalAmount}</Text>
-        <TouchableOpacity style={styles.addButtonAddExpense} onPress={openExpenseModal}>
-          <Text style={styles.buttonText}>Add Expense</Text>
-        </TouchableOpacity>
+        <View style={styles.inputContainerTotal}>
+          <Text style={{fontSize:20,marginTop:10,fontWeight:'bold'}}>Total = {totalAmount}</Text>
+          <TouchableOpacity style={styles.addButtonAddExpense} onPress={openExpenseModal}>
+            <Text style={styles.buttonText}>Add Expense</Text>
+          </TouchableOpacity>
+        </View>
+        <Toast />
       </View>
-      <Toast />
-    </View>
+    </>
   );
 };
 
