@@ -9,6 +9,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 export default function LoginScreen() {
   const navigation = useNavigation();
   return (
+    
     <View className="flex-1 bg-white " style={{backgroundColor: themeColors.bg}}>
       <SafeAreaView  className="flex ">
         <View className="flex-row justify-start">

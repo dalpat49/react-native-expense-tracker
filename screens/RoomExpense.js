@@ -473,7 +473,7 @@ const RoomExpense = () => {
                       onChangeText={setDescription}
                     />
 
-                  <View  style={{flexDirection:"row" ,width:100}}>
+                  <View  style={{flexDirection:"row" ,width:"100%"}}>
 
                     <TextInput
                       style={styles.inputRow}
@@ -568,8 +568,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     marginBottom: 16,
-    width:160,
-    marginHorizontal:5
+    width:"50%",
+    marginHorizontal:1
   },
   input: {
     backgroundColor: "#F5F5F5",
@@ -577,6 +577,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     marginBottom: 16,
+    width:"100%"
   },
   addButtonAdd: {
     backgroundColor: "#3366FF",
@@ -594,6 +595,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     textAlign: "center",
+    width:"50%"
   },
   containerData: {
     flexDirection: 'row',
@@ -611,6 +613,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
+    width:"100%"
   },
   descriptionContainer: {
     flex: 1,

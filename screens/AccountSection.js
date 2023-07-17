@@ -3,7 +3,14 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, Modal, TextInput, Butt
 import { Ionicons } from '@expo/vector-icons';
 import Appbar from './Appbar';
 
+import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+
+
 const AccountSection = () => {
+    const navigation = useNavigation();
+
   // Replace the following with your actual user data or use state management like Redux to retrieve user info
   const user = {
     username: 'JohnDoe',
@@ -14,6 +21,8 @@ const AccountSection = () => {
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [editedUsername, setEditedUsername] = useState(user.username);
+  const [isLoggedIn, setLoggedIn] = useState(false);
+
 
   const handleForgotPassword = () => {
     // Implement your "Forgot Password" logic here
@@ -31,11 +40,21 @@ const AccountSection = () => {
     setShowEditProfileModal(false);
   };
 
-  const handleLogout = () => {
-    // Implement your "Save Profile Changes" logic here
-    // For simplicity, we'll just update the state with the edited username
-    setShowEditProfileModal(false);
+  const handleLogout = async() => {
+      try {
+        const value = await AsyncStorage.getItem('isLoggedIn');
+        if (value !== null && value === 'true') {
+        await AsyncStorage.setItem('isLoggedIn' , 'false');
+          setLoggedIn(false);
+          navigation.navigate('WelcomeScreen')
+        }
+      } 
+      catch (error) {
+        console.log('Error checking login status:', error);
+        
+      }
   };
+
 
   return (
     <>

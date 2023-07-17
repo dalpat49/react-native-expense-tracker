@@ -178,7 +178,7 @@ const Personal = ({
       <Appbar title={"Your Expenses"} />
       <Toast />
       <View style={styles.container}>
-            <SafeAreaView style={styles.container}>
+            <SafeAreaView style={styles.containerInner}>
             <FlatList
                 onScroll={onScroll}
                 showsHorizontalScrollIndicator={false}
@@ -307,6 +307,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#F2F2F2",
     paddingVertical: 20,
     paddingHorizontal: 16,
+    width:"100%",
+  },
+  containerInner: {
+    flex: 1,
+    backgroundColor: "#F2F2F2",
+    // paddingVertical: ,
+    width:"100%",
   },
   titleMain: {
     fontSize: 24,
@@ -364,6 +371,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     marginBottom: 16,
+    width:"100%"
   },
   addButtonAdd: {
     backgroundColor: "#3366FF",
@@ -398,6 +406,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
+    width:"100%"
   },
   descriptionContainer: {
     flex: 1,
@@ -481,7 +490,8 @@ const styles = StyleSheet.create({
     marginVertical:6,
     borderRadius: 8,
     paddingVertical: 12,
-    marginHorizontal: 4
+    width:"50%",
+    marginHorizontal: 1
     
   },
   addButtonForInputAdd: {
@@ -490,7 +500,8 @@ const styles = StyleSheet.create({
     marginVertical:6,
     borderRadius: 8,
     paddingVertical: 12,
-    marginHorizontal: 4
+    width:"50%",
+    marginHorizontal: 1
     
   },
 });
