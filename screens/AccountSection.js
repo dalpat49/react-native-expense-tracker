@@ -42,12 +42,13 @@ const AccountSection = () => {
 
   const handleLogout = async() => {
       try {
-        const value = await AsyncStorage.getItem('isLoggedIn');
-        if (value !== null && value === 'true') {
-        await AsyncStorage.setItem('isLoggedIn' , 'false');
+          await AsyncStorage.removeItem('isLoggedIn');
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'Login' }], // Navigate back to the login screen after logout
+          });
           setLoggedIn(false);
           navigation.navigate('WelcomeScreen')
-        }
       } 
       catch (error) {
         console.log('Error checking login status:', error);

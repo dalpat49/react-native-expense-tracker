@@ -24,6 +24,10 @@ import * as Notifications from 'expo-notifications';
 import * as TaskManager from 'expo-task-manager';
 import Appbar from "./Appbar";
 
+import * as BackgroundFetch from 'expo-background-fetch';
+import { startBackgroundLocationTracking, stopBackgroundLocationTracking, BACKGROUND_LOCATION_TASK_NAME } from '../BackgroundTask';
+
+
 // Define the task name for background notifications
 
 
@@ -94,6 +98,33 @@ const RoomExpense = () => {
 
   }, []);
 
+  useEffect(() => {
+    // Set up the background fetch task
+    const backgroundFetchTask = async (taskId) => {
+      if (taskId === BACKGROUND_LOCATION_TASK_NAME) {
+        console.log('Background fetch task triggered');
+        // Start background location tracking
+        startBackgroundLocationTracking();
+        // Finish the background fetch task
+        // BackgroundFetch.unregisterTaskAsync(taskId);
+      }
+    };
+
+    BackgroundFetch.registerTaskAsync(BACKGROUND_LOCATION_TASK_NAME)
+      .then(() => {
+        console.log('Background fetch task registered');
+      })
+      .catch((error) => {
+        console.error('Error registering background fetch task:', error);
+      });
+      backgroundFetchTask()
+
+    // return () => {
+    //   // Stop background location tracking when the app is closed
+    //   stopBackgroundLocationTracking();
+    // };
+  }, []);
+
 
   // To unsubscribe to these update, just use:
   const fetchExpenses = async () => {
@@ -121,63 +152,10 @@ const RoomExpense = () => {
     
   };
 
-
-  const saveToken = async () => {
-    try {
-    
-      await axios
-        .post("https://expense-tracker-room.onrender.com/saveToken",{tokenNew})
-        .then((res) => {
-          
-         
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-      
-    } catch (err) {
-      alert(err);
-    }
-    
-  };
   
 
-
-  const getToken = async () => {
-    try {
-    
-      await axios
-        .get("https://expense-tracker-room.onrender.com/getToken")
-        .then((res) => {
-          let getAllTokens = res.data;
-         
- 
-          function removeDuplicates(arr) {
-              return arr.filter((item,
-                  index) => arr.indexOf(item) === index);
-          }
-        
-        let getalldata = removeDuplicates(getAllTokens);
-        // console.log(getalldata)
-          // setdlptToken(getalldata[0])
-          // setauToken(getalldata[1])
-          // setshktiToken(getalldata[2])
-          // setgotmTokan(getalldata[4])
-         
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-      
-    } catch (err) {
-      alert(err);
-    }
-    
-  };
-  
 
   useEffect(() => {
-    saveToken();
 
     const unsubscribe = NetInfo.addEventListener((state) => {
       const isConnected = state.isConnected;
@@ -187,7 +165,6 @@ const RoomExpense = () => {
     unsubscribe();
     //fetch al data
     fetchExpenses();
-    getToken();
     // registerForPushNotificationsAsync()
   }, []);
 

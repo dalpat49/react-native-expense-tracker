@@ -4,6 +4,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import RoomExpense from './RoomExpense';
 import AccountSection from './AccountSection';
 import Personal from './Personal';
+import MapScreen from './MapScreen';
 
 
 
@@ -32,6 +33,16 @@ function NewBottom() {
             tabBarLabel: 'Personal',
             tabBarIcon: ({ color }) => (
                 <MaterialCommunityIcons name="notebook" color={color} size={26} />
+            ),
+            }} 
+        />
+        <Tab.Screen 
+            name="Map"
+            component={MapScreen}
+            options={{
+            tabBarLabel: 'Map',
+            tabBarIcon: ({ color }) => (
+                <MaterialCommunityIcons name="map-marker-account" color={color} size={26} />
             ),
             }} 
         />

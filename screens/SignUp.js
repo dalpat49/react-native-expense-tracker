@@ -1,15 +1,59 @@
 import { View, Text, TouchableOpacity, Image, TextInput  , SafeAreaView} from 'react-native'
-import React from 'react'
+import React , {useState} from 'react'
 import { themeColors } from '../theme'
 // import {ArrowLeftIcon} from 'react-native-heroicons/solid';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-
 import { useNavigation } from '@react-navigation/native';
+import Toast from "react-native-toast-message";
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // subscribe for more videos like this :)
 export default function SignUpScreen() {
     const navigation = useNavigation();
+    const [email , setemail] = useState("")
+    const [password , setpassword] = useState("")
+    const [userName , setuserName] = useState("");
+
+    const registerUser = ()=>{
+        try {
+            if(userName == "" || email == "" || password == ""){
+                Toast.show({
+                    type:"success",
+                    text1:"Please enter all details"
+                })
+                return;
+            }
+            else{
+                axios.post("https://expense-tracker-room.onrender.com/userRegister" ,{
+                    userName,
+                    email,
+                    password
+                }).then((res)=>{
+                    const {status  , msg} = res.data;
+                    if(status == "Success"){
+                        Toast.show({
+                            type:"success",
+                            text1:msg
+                        })
+                    }
+                    else if(status == "failed"){
+                        Toast.show({
+                            type:"error",
+                            text1:msg
+                        })
+                    }
+                })
+            }
+
+            
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
   return (
+    <>
     <View className="flex-1 bg-white" style={{backgroundColor: themeColors.bg}}>
       <SafeAreaView className="flex">
         <View className="flex-row justify-start">
@@ -25,6 +69,8 @@ export default function SignUpScreen() {
                 style={{width: 165, height: 110}} />
         </View>
       </SafeAreaView>
+    <Toast />
+
       <View className="flex-1 bg-white px-8 pt-8"
         style={{borderTopLeftRadius: 50, borderTopRightRadius: 50}}
       >
@@ -32,24 +78,28 @@ export default function SignUpScreen() {
             <Text className="text-gray-700 ml-4">Full Name</Text>
             <TextInput
                 className="p-4 bg-gray-100 text-gray-700 rounded-2xl mb-3"
-                value="john snow"
+                value={userName}
+                onChangeText={(text) => setuserName(text)}
                 placeholder='Enter Name'
             />
             <Text className="text-gray-700 ml-4">Email Address</Text>
             <TextInput
                 className="p-4 bg-gray-100 text-gray-700 rounded-2xl mb-3"
-                value="john@gmail.com"
+                value={email}
+                onChangeText={(text) => setemail(text)}
                 placeholder='Enter Email'
             />
             <Text className="text-gray-700 ml-4">Password</Text>
             <TextInput
                 className="p-4 bg-gray-100 text-gray-700 rounded-2xl mb-7"
                 secureTextEntry
-                value="test12345"
+                value={password}
+                onChangeText={(text) => setpassword(text)}
                 placeholder='Enter Password'
             />
             <TouchableOpacity
                 className="py-3 bg-yellow-400 rounded-xl"
+                onPress={registerUser}
             >
                 <Text className="font-xl font-bold text-center text-gray-700">
                     Sign Up
@@ -81,5 +131,6 @@ export default function SignUpScreen() {
         </View>
       </View>
     </View>
+    </>
   )
 }

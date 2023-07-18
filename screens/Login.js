@@ -1,22 +1,71 @@
 import { View, Text, TouchableOpacity, Image, TextInput ,SafeAreaView } from 'react-native'
-import React from 'react'
+import React  , {useState} from 'react'
 // import { SafeAreaView } from 'react-native-safe-area-context'
 import { themeColors } from '../theme'
 import { useNavigation } from '@react-navigation/native'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import Toast from "react-native-toast-message";
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+
 
 
 export default function LoginScreen() {
   const navigation = useNavigation();
-  return (
-    
+
+  const [email , setEmail] = useState("");
+  const [password , setpassword] = useState("");
+
+  const handleLogin = async()=>{
+    try{
+      if(email == '' || password == ''){
+        Toast.show({
+          type:"error",
+          text1:"Please fill all details"
+        })
+        return;
+      }
+      else{
+        await axios.post("https://expense-tracker-room.onrender.com/userLogin" , { 
+          email ,password
+        })
+          .then(async(res)=>{
+            let {status , msg } = res.data;
+            if(status == "Success"){
+              await AsyncStorage.setItem('isLoggedIn', 'true');
+              // navigation.navigate("NewBottom")
+              Toast.show({
+                type:"success",
+                text1:msg
+              })
+              await AsyncStorage.setItem('isLoggedIn' , 'true');
+            }
+            else if(status ==  "failed"){
+              Toast.show({
+                type:"error",
+                text1:msg
+              })
+            }
+          }).catch((err)=>{
+            console.error(err)
+          })
+      }
+    }
+    catch(err){
+      console.error(err);
+    }
+  }
+
+
+  return (    
     <View className="flex-1 bg-white " style={{backgroundColor: themeColors.bg}}>
-      <SafeAreaView  className="flex ">
+      <SafeAreaView  className="flex mt-5">
         <View className="flex-row justify-start">
-          <TouchableOpacity onPress={()=> navigation.goBack()} 
+          {/* <TouchableOpacity onPress={()=> navigation.goBack()} 
             className="bg-yellow-400 p-2 mt-6 rounded-tr-2xl rounded-bl-2xl ml-4">
             <MaterialCommunityIcons name="arrow-left" color={"black"} size={26} />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
         <View  className="flex-row justify-center mb-4">
           <Image source={require('../assets/images/login.png')} 
@@ -31,20 +80,25 @@ export default function LoginScreen() {
             <TextInput 
               className="p-4 bg-gray-100 text-gray-700 rounded-2xl mb-3"
               placeholder="email"
-              value="john@gmail.com" 
+              value={email} 
+              onChangeText={(text)=> setEmail(text)}
+
             />
             <Text className="text-gray-700 ml-4">Password</Text>
             <TextInput 
               className="p-4 bg-gray-100 text-gray-700 rounded-2xl"
               secureTextEntry
               placeholder="password"
-              value="test12345" 
+              value={password} 
+              onChangeText={(text)=> setpassword(text)}
             />
             <TouchableOpacity className="flex items-end">
               <Text className="text-gray-700 mb-5">Forgot Password?</Text>
             </TouchableOpacity>
             <TouchableOpacity 
-              className="py-3 bg-yellow-400 rounded-xl">
+              className="py-3 bg-yellow-400 rounded-xl"
+              onPress={handleLogin}
+            >
                 <Text 
                     className="text-xl font-bold text-center text-gray-700"
                 >
@@ -73,7 +127,7 @@ export default function LoginScreen() {
                   <Text className="font-semibold text-yellow-500"> Sign Up</Text>
               </TouchableOpacity>
           </View>
-          
+          <Toast />
       </View>
     </View>
     

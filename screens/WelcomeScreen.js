@@ -1,10 +1,47 @@
-import { View, Text, Image, TouchableOpacity , SafeAreaView } from 'react-native'
-import React from 'react'
+import { View, Text, Image, TouchableOpacity , SafeAreaView  , BackHandler } from 'react-native'
+import React, { useState, useEffect , useRef} from "react";
 import { themeColors } from '../theme'
 import { useNavigation } from '@react-navigation/native'
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 export default function WelcomeScreen() {
     const navigation = useNavigation();
+  const [isLoggedIn, setLoggedIn] = useState(false);
+
+    useEffect(() => {
+        checkLoginStatus();
+   
+      }, []);
+
+    const checkLoginStatus = async () => {
+        try {
+          const value = await AsyncStorage.getItem('isLoggedIn');
+          if (value !== null && value === 'true') {
+            setLoggedIn(true);
+          }
+          else{
+            setLoggedIn(false);
+          }
+        } catch (error) {
+          console.log('Error checking login status:', error);
+        }
+      };
+
+      useEffect(() => {
+        const disableGoBack = () => {
+          return true; // Return true to indicate that you want to disable the default "go back" behavior
+        };
+    
+        // Add the event listener for the hardware back button press
+        BackHandler.addEventListener('hardwareBackPress', disableGoBack);
+    
+        // Return a cleanup function to remove the event listener when the component is unmounted
+        return () => {
+          BackHandler.removeEventListener('hardwareBackPress', disableGoBack);
+        };
+      }, []);
+    
   return (
     <SafeAreaView className="flex-1" style={{backgroundColor: themeColors.bg}}>
         <View className="flex-1 flex justify-around my-4">
