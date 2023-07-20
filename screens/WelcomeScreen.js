@@ -9,24 +9,6 @@ export default function WelcomeScreen() {
     const navigation = useNavigation();
   const [isLoggedIn, setLoggedIn] = useState(false);
 
-    useEffect(() => {
-        checkLoginStatus();
-   
-      }, []);
-
-    const checkLoginStatus = async () => {
-        try {
-          const value = await AsyncStorage.getItem('isLoggedIn');
-          if (value !== null && value === 'true') {
-            setLoggedIn(true);
-          }
-          else{
-            setLoggedIn(false);
-          }
-        } catch (error) {
-          console.log('Error checking login status:', error);
-        }
-      };
 
       useEffect(() => {
         const disableGoBack = () => {

@@ -31,15 +31,18 @@ export default function LoginScreen() {
           email ,password
         })
           .then(async(res)=>{
-            let {status , msg } = res.data;
+            let {status , msg  , user} = res.data;
+            console.log(user);
             if(status == "Success"){
-              await AsyncStorage.setItem('isLoggedIn', 'true');
-              // navigation.navigate("NewBottom")
-              Toast.show({
-                type:"success",
-                text1:msg
-              })
-              await AsyncStorage.setItem('isLoggedIn' , 'true');
+              AsyncStorage.setItem('keepLogin', JSON.stringify(true));
+               AsyncStorage.setItem('userName', user['username']);
+               AsyncStorage.setItem('userEmail', user['email']);
+
+              navigation.navigate("HomeScreen")
+              // Toast.show({
+              //   type:"success",
+              //   text1:msg
+              // })
             }
             else if(status ==  "failed"){
               Toast.show({

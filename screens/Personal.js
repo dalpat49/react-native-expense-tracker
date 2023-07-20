@@ -25,6 +25,7 @@ import Toast from "react-native-toast-message";
 import Appbar from "./Appbar";
 import * as BackgroundFetch from 'expo-background-fetch';
 import { startBackgroundLocationTracking, stopBackgroundLocationTracking, BACKGROUND_LOCATION_TASK_NAME } from '../BackgroundTask';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 
@@ -82,9 +83,10 @@ const Personal = ({
 
   const fetchExpenses = async () => {
     try {
+      let getuserEmail = await AsyncStorage.getItem('userEmail')
      
       await axios
-        .get("https://expense-tracker-room.onrender.com/getuserexpenses")
+        .get("https://expense-tracker-room.onrender.com/getuserexpenses/" + getuserEmail)
         .then((res) => {
           const { status, data ,sum} = res.data;
           if (status === "success") {
@@ -118,6 +120,7 @@ const Personal = ({
     let description1 = description;
     let amount1 = amount;
     let savedate = date.toISOString().split('T')[0];
+    let email  = await AsyncStorage.getItem('userEmail')
 
     // setisDataAvailable(true);
     try {
@@ -126,6 +129,7 @@ const Personal = ({
           description1,
           amount1,
           savedate,
+          email,
         })
         .then((response) => {          
           // Clear input fields
@@ -217,7 +221,6 @@ const Personal = ({
                     <Pressable onPress={()=>onPressFunction(item._id)}>
                     <View style={styles.containerData} >
                         <View style={styles.descriptionContainer}>
-                        <Text style={styles.descriptionText}>[{item.username}]</Text>
                         <Text style={styles.descriptionText}>[{item.savedDate}] </Text>
                         <Text style={styles.descriptionText}>{item.description}</Text>
                         </View>

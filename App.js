@@ -21,6 +21,7 @@ import NewBottom from "./screens/NewBottom";
 import BottomNavigation from "./screens/BottomNavigation";
 import SignUp from "./screens/SignUp";
 import WelcomeScreen from "./screens/WelcomeScreen";
+import {LoginStackNavigator , MainScreenNavigation} from './navigation/AllNavigation'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import axios from 'axios';
@@ -33,22 +34,24 @@ const Stack = createNativeStackNavigator();
 
 const App = () => {
 
-  const [isLoggedIn, setLoggedIn] = useState(true);
+  const [isLoggedIn, setLoggedIn] = useState(false);
   const [currentLocation, setCurrentLocation] = useState(null);
-
- 
-  useEffect(() => {
-    checkLoginStatus();
-  }, []);
 
   const checkLoginStatus = async () => {
     try {
-      const value = await AsyncStorage.getItem('isLoggedIn');
-      setLoggedIn(value === 'true');
+      const value = await AsyncStorage.getItem('keepLogin');
+      setLoggedIn(value);
+      console.log(isLoggedIn);
     } catch (error) {
       console.error('Error reading login status:', error);
     }
   };
+
+  useEffect(() => {
+    checkLoginStatus();
+  }, []);
+
+  
   
 useEffect(() => {
   (async () => {
@@ -147,20 +150,10 @@ useEffect(() => {
   return (
     <>
      <NavigationContainer>
-      <Stack.Navigator>
-      {isLoggedIn ? 
-        (
-          <Stack.Screen name="NewBottom" component={NewBottom} options={{headerShown:false}} />
-        )
-        :
-        (
-          <Stack.Screen name="Login" component={Login} options={{headerShown:false}} />
-        )
-      }
-
-      <Stack.Screen name="SignUp" component={SignUp} options={{headerShown:false , animationTypeForReplace: 'push', animation:'slide_from_right'}} />
-
-      </Stack.Navigator>
+      {isLoggedIn 
+       ?  <MainScreenNavigation /> :
+        <LoginStackNavigator />
+        }
     </NavigationContainer>
     {/* <Login /> */}
     </>

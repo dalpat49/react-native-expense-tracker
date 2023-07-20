@@ -28,26 +28,32 @@ import * as BackgroundFetch from 'expo-background-fetch';
 
 const Stack = createNativeStackNavigator();
 
-const AllNavigation = () => {
 
-
-  return (
+export const LoginStackNavigator =()=>{
+  return(
     <>
-     
       <Stack.Navigator>
-      <Stack.Screen name="NewBottom" component={NewBottom} options={{headerShown:false}} />
-      <Stack.Screen name="WelcomeScreen" component={WelcomeScreen} options={{headerShown:false}} />
+
+     <Stack.Screen name="WelcomeScreen" component={WelcomeScreen} options={{headerShown:false}} />
       <Stack.Screen name="SignUp" component={SignUp} options={{headerShown:false , animationTypeForReplace: 'push', animation:'slide_from_right'}} />
       <Stack.Screen name="Login" component={Login} options={{headerShown:false , animationTypeForReplace: 'push', animation:'slide_from_right'}} />
-      <Stack.Screen name="WelcomeScreen" component={WelcomeScreen} options={{headerShown:false}} />
+      <Stack.Screen name="HomeScreen" component={MainScreenNavigation} options={{headerShown:false , animationTypeForReplace: 'push', animation:'slide_from_right'}} />
+      </Stack.Navigator>
+
+    </>
+  )
+}
+
+export const MainScreenNavigation =()=>{
+  return(
+    <>
+      <Stack.Navigator>
+      <Stack.Screen name="NewBottom" component={NewBottom} options={{headerShown:false}} />
+      <Stack.Screen name="mainLogin" component={LoginStackNavigator} options={{headerShown:false}} />
 
       </Stack.Navigator>
 
-    {/* <Login /> */}
     </>
-  );
-};
-
-
-export default AllNavigation;
+  )
+}
 
