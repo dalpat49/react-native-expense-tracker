@@ -20,24 +20,16 @@ import Toast from "react-native-toast-message";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Input, Icon } from 'react-native-elements';
 import * as Device from 'expo-device';
-import * as Notifications from 'expo-notifications';
-import * as TaskManager from 'expo-task-manager';
 import Appbar from "./Appbar";
+import { List, Avatar, IconButton } from 'react-native-paper';
+import {SelectList, MultipleSelectList }from 'react-native-dropdown-select-list'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import * as BackgroundFetch from 'expo-background-fetch';
-import { startBackgroundLocationTracking, stopBackgroundLocationTracking, BACKGROUND_LOCATION_TASK_NAME } from '../BackgroundTask';
+
+
 
 
 // Define the task name for background notifications
-
-
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
-});
 
 
 const RoomExpense = () => {
@@ -57,74 +49,18 @@ const RoomExpense = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [YourName, SetYourName] = useState("");
   const [myDevice, setMyDevice] = useState("dalpat's Galaxy J6+");
-  const [totalAmount, settotalAmount] = useState('0');
-  const [expoPushToken, setExpoPushToken] = useState('');
-  const [tokenNew, settokenNew] = useState('');
-  const [NewToken, setNewToken] = useState('');
-  const [dlptToken, setdlptToken] = useState('');
-  const [ajuToken, setauToken] = useState('');
-  const [shktiToken, setshktiToken] = useState('');
-  const [gotmTokan, setgotmTokan] = useState('');
-  const [notification, setNotification] = useState(false);
-  const notificationListener = useRef();
-  const responseListener = useRef();
-
-     
-    
-
-  useEffect(() => {
-    registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
-    registerForPushNotificationsAsync().then(token => settokenNew(token));
-
-    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
-      setNotification(notification);
-    });
-
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-      console.log(response);
-    });
-
-    return () => {
-      Notifications.removeNotificationSubscription(notificationListener.current);
-      Notifications.removeNotificationSubscription(responseListener.current);
-    };
-
-    // App startup
-    async function appStartup() {
-      // Register for push notifications
-      const token = await registerForPushNotificationsAsync();
-      console.log('Push notification token:', token);
-    }
-
-  }, []);
-
-  useEffect(() => {
-    // Set up the background fetch task
-    const backgroundFetchTask = async (taskId) => {
-      if (taskId === BACKGROUND_LOCATION_TASK_NAME) {
-        console.log('Background fetch task triggered');
-        // Start background location tracking
-        startBackgroundLocationTracking();
-        // Finish the background fetch task
-        // BackgroundFetch.unregisterTaskAsync(taskId);
-      }
-    };
-
-    BackgroundFetch.registerTaskAsync(BACKGROUND_LOCATION_TASK_NAME)
-      .then(() => {
-        console.log('Background fetch task registered');
-      })
-      .catch((error) => {
-        console.error('Error registering background fetch task:', error);
-      });
-      backgroundFetchTask()
-
-    // return () => {
-    //   // Stop background location tracking when the app is closed
-    //   stopBackgroundLocationTracking();
-    // };
-  }, []);
-
+  const [totalAmount, settotalAmount] = useState('0');  
+  
+  const [category, setCategory] = React.useState("");
+  
+  const data = [
+    {key:'Khana', value:'Khana'},
+    {key:'Bill', value:'Bill'},
+    {key:'Mza', value:'Mza'},
+    {key:'Tool', value:'Tool'},
+    {key:'Electronic', value:'Electronic'},
+    {key:'Kitchen product', value:'Kitchen product'},
+  ]   
 
   // To unsubscribe to these update, just use:
   const fetchExpenses = async () => {
@@ -169,40 +105,12 @@ const RoomExpense = () => {
   }, []);
 
 
-  async function sendPushNotification(pushTokens,message) {
-    // Retrieve the push tokens of all devices/users from your database
-    // const pushTokens = []; // Replace with your own logic to get the tokens
-  
-    // Prepare the notification payload
-    const notification = {
-      to: pushTokens,
-      sound: 'default',
-      title: 'New Expense Added',
-      body: message,
-      data: { data: 'additional data' },
-    };
-  
-    // Send the notification using Expo's push notification service
-    const response = await fetch('https://exp.host/--/api/v2/push/send', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(notification),
-    });
-  
-    // Handle the response
-    const result = await response.json();
-    // console.log(result);
-  }
-
 
   const handleAddExpense = async () => {
     setAddBtnDisabled(true)
     // Perform validation and add the expense
     // Example:
-    if (!description || !amount || !date || !YourName)  {
+    if (!description || !amount || !date || !category)  {
       Toast.show({
         type: "error",
         text1: "Please fill all details",
@@ -212,23 +120,24 @@ const RoomExpense = () => {
 
     let description1 = description;
     let amount1 = amount;
-    let userName = YourName;
+    let getcategory = category; 
+    let userName =  await AsyncStorage.getItem('userName');    ;
     let savedate = date.toISOString().split('T')[0];
 
     setisDataAvailable(true);
+    setIsUpdating(false);
+
     try {
       await axios
         .post("https://expense-tracker-room.onrender.com/getExpenses", {
           description1,
           amount1,
           savedate,
-          userName
+          userName,
+          getcategory
         })
         .then((response) => {
-          sendPushNotification('ExponentPushToken[pJHPI5NTDlAJRUQLb6OqgU]',`${YourName} added ${description} to room expense`)
-          // sendPushNotification('ExponentPushToken[pJHPI5NTDlAJRUQLb6OqgU]','getData from dalpat singh')
-          // sendPushNotification('ExponentPushToken[pJHPI5NTDlAJRUQLb6OqgU]','getData from dalpat singh')
-          // sendPushNotification('ExponentPushToken[pJHPI5NTDlAJRUQLb6OqgU]','getData from dalpat singh')
+        
           // Clear input fields
           let { status, msg } = response.data;
 
@@ -238,7 +147,6 @@ const RoomExpense = () => {
               text1: msg,
             });
             setisDataAvailable(false);
-            setIsUpdating(false);
           }
 
           setDescription("");
@@ -277,12 +185,12 @@ const RoomExpense = () => {
       return;
     }
     else{
+      setIsDeleting(false);
       let dlturl = "https://expense-tracker-room.onrender.com/deleteExpense/" + item;
       await axios
       .get(dlturl)
       .then((response) => {
         let { status, msg } = response.data;
-        setIsDeleting(false);
         if (status == "success") {
           fetchExpenses();
           Toast.show({
@@ -328,39 +236,6 @@ const RoomExpense = () => {
     setIsUpdating(false);
   }
 
-  async function registerForPushNotificationsAsync() {
-    let token;
-  
-    if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync('default', {
-        name: 'default',
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#FF231F7C',
-      });
-    }
-  
-    if (Device.isDevice) {
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
-      if (existingStatus !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-      }
-      if (finalStatus !== 'granted') {
-        alert('Failed to get push token for push notification!');
-        return;
-      }
-      token = (await Notifications.getExpoPushTokenAsync()).data;
-      console.log(token);
-      setNewToken(token)
-    } else {
-      alert('Must use physical device for Push Notifications');
-    }
-  
-  
-    return token;
-  }
   return (
     <>
       <Appbar title={"Home"} />
@@ -373,36 +248,49 @@ const RoomExpense = () => {
           showsVerticalScrollIndicator={false}
           keyExtractor={(item) => item._id}
           renderItem={({ item }) => 
-          <>
-              <Pressable onPress={()=>onPressFunction(item._id)}>
-                <View style={styles.containerData} >
-                  <View style={styles.descriptionContainer}>
-                    <Text style={styles.descriptionText}>[{item.username}]</Text>
-                    <Text style={styles.descriptionText}>[{item.savedDate}] </Text>
-                    <Text style={styles.descriptionText}>{item.description}</Text>
-                  </View>
-                  <Text style={styles.amountText}>₹{item.amount}</Text>
-                </View>
-            </Pressable>
-        {isDeleting ?(
-            <Modal visible={isDeleting} transparent={true} animationType="fade">
-            <View style={styles.modalContainer}>
-              <View style={styles.contentContainer}>
-                <Text style={styles.title}>Delete Item</Text>
-                <Text style={styles.subtitle}>Are you sure.</Text>
-                  <View style={styles.buttonArea}>
-                    <TouchableOpacity style={styles.addButton} onPress={closeModal}>
-                      <Text style={styles.buttonText}>Close</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.addButtonDlt} onPress={()=>{deleteItem(YourId)}}>
-                      <Text style={styles.buttonText}>Delete</Text>
-                    </TouchableOpacity>
-                  </View>
-              </View>
-            </View>
-            </Modal>
-        ):null}
-          </>
+          {
+              return <>
+                <Pressable onPress={() => onPressFunction(item._id)}>
+                  <List.Item
+                    // name  of particular 
+                    title={item.description}
+                    //category 
+                    description={item.category}
+                    titleStyle={styles.name}
+                    descriptionStyle={styles.description}
+
+                    right={() => (
+                      <View style={styles.rightContainer}>
+                        {/* amount  */}
+                        <Text style={styles.price}>₹{item.amount}</Text>
+                        {/* username */}
+                        <Text style={styles.category}>{item.username}</Text>
+                         {/* date  */}
+                        <Text style={styles.date}>{item.savedDate}</Text>
+                      </View>
+                    )}
+                    style={styles.listItem} />
+                </Pressable>
+                {isDeleting ? (
+                  <Modal visible={isDeleting} transparent={true} animationType="fade">
+                    <View style={styles.modalContainer}>
+                      <View style={styles.contentContainer}>
+                        <Text style={styles.title}>Delete Item</Text>
+                        <Text style={styles.subtitle}>Are you sure.</Text>
+                        <View style={styles.buttonArea}>
+                          <TouchableOpacity style={styles.addButton} onPress={closeModal}>
+                            <Text style={styles.buttonText}>Close</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity style={styles.addButtonDlt} onPress={() => { deleteItem(YourId); } }>
+                            <Text style={styles.buttonText}>Delete</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    </View>
+                  </Modal>
+                ) : null}
+              </>;
+            }
         
       }
       refreshControl={
@@ -443,14 +331,23 @@ const RoomExpense = () => {
                       />
                     }
                   />  
-                  <TextInput
+
+                  <SelectList setSelected={setCategory} data={data}  style={{marginBottom: 8}} />
+
+                  {/* <TextInput
                       style={styles.input}
-                      placeholder="Description"
+                      placeholder="Particular"
+                      value={description}
+                      onChangeText={setDescription}
+                    /> */}
+
+                  <View  style={{flexDirection:"row" ,width:"100%" , marginTop:20}}>
+                    <TextInput
+                      style={styles.inputRow}
+                      placeholder="Particular"
                       value={description}
                       onChangeText={setDescription}
                     />
-
-                  <View  style={{flexDirection:"row" ,width:"100%"}}>
 
                     <TextInput
                       style={styles.inputRow}
@@ -459,13 +356,13 @@ const RoomExpense = () => {
                       onChangeText={setAmount}
                       keyboardType="numeric"
                     />
-
+{/* 
                     <TextInput
                       style={styles.inputRow}
                       placeholder="Your Name"
                       value={YourName}
                       onChangeText={SetYourName}
-                    />
+                    /> */}
                   </View>
                   <View style={styles.buttonArea}>
                       <TouchableOpacity style={styles.addButtonForInput} onPress={closeModalAddExpense}>
@@ -498,6 +395,40 @@ const styles = StyleSheet.create({
     backgroundColor: "#F2F2F2",
     paddingVertical: 20,
     paddingHorizontal: 16,
+  },
+  listItem: {
+    borderRadius: 10,
+    marginVertical: 8,
+    backgroundColor: '#FFF',
+  },
+  avatar: {
+    backgroundColor: '#FFAB91',
+  },
+  name: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#3F51B5',
+  },
+  description: {
+    fontSize: 16,
+    color: '#757575',
+  },
+  rightContainer: {
+    alignItems: 'flex-end',
+    marginRight: 10,
+  },
+  category: {
+    fontSize: 16,
+    color: '#3F51B5',
+  },
+  date: {
+    fontSize: 14,
+    color: '#757575',
+  },
+  price: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#E53935',
   },
   titleMain: {
     fontSize: 24,
@@ -553,6 +484,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
+    marginTop:12,
     marginBottom: 16,
     width:"100%"
   },

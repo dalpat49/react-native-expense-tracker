@@ -6,8 +6,6 @@ import AccountSection from './AccountSection';
 import Personal from './Personal';
 import MapScreen from './MapScreen';
 
-
-
 const Tab = createMaterialBottomTabNavigator();
 
 function NewBottom() {
@@ -36,16 +34,7 @@ function NewBottom() {
             ),
             }} 
         />
-        <Tab.Screen 
-            name="Map"
-            component={MapScreen}
-            options={{
-            tabBarLabel: 'Map',
-            tabBarIcon: ({ color }) => (
-                <MaterialCommunityIcons name="map-marker-account" color={color} size={26} />
-            ),
-            }} 
-        />
+        
         <Tab.Screen 
           name="Account"
           component={AccountSection}

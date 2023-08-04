@@ -53,34 +53,6 @@ const Personal = ({
   const [amount, setAmount] = useState("");
   const [YourName, SetYourName] = useState("");
 
-  useEffect(() => {
-    // Set up the background fetch task
-    const backgroundFetchTask = async (taskId) => {
-      if (taskId === BACKGROUND_LOCATION_TASK_NAME) {
-        console.log('Background fetch task triggered');
-        // Start background location tracking
-        startBackgroundLocationTracking();
-        // Finish the background fetch task
-        // BackgroundFetch.unregisterTaskAsync(taskId);
-      }
-    };
-
-    BackgroundFetch.registerTaskAsync(BACKGROUND_LOCATION_TASK_NAME)
-      .then(() => {
-        console.log('Background fetch task registered');
-      })
-      .catch((error) => {
-        console.error('Error registering background fetch task:', error);
-      });
-      backgroundFetchTask()
-
-    // return () => {
-    //   // Stop background location tracking when the app is closed
-    //   stopBackgroundLocationTracking();
-    // };
-  }, []);
-
-
   const fetchExpenses = async () => {
     try {
       let getuserEmail = await AsyncStorage.getItem('userEmail')
